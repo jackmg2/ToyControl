@@ -1,0 +1,52 @@
+<% layout('layout') -%>
+
+    <div id="overlay"></div>
+    <div id="content" class="home">
+
+        <h1><span class="bold">Toy</span><span class="light">Control</span></h1>
+        <div id="main">
+
+            <section>
+                <a href="/Solo" class="c_btn">Solo</a>
+                <p>
+                    You just want a remote and don't want to install an app.<br />
+                    Only you can control your toy in this mode.
+                </p>
+            </section>
+            <section>
+                <button onclick="navigateToRoom()" class="c_btn">Room</button>
+                <p>
+                    Everyone in the same room can control everyone toys from everywhere. You just need to share the
+                    address.<br />
+                    You want to connect with a distant partner? You want to share a good time with other people?<br />
+                    This one is for you!
+                </p>
+            </section>
+            <section>
+                <a href="#" class="c_btn" disabled>Nudge me!</a>
+                <p>
+                    You like to be suprised? You are daring?<br />
+                    This one may be for you!<br />
+                    Connect to this room, share the link. Everyone can send an impulsion that will last between 1 and 3
+                    seconds
+                    with a random intensity.
+                </p>
+            </section>
+            <section>
+                <a href="#" class="c_btn" disabled>Sensate</a>
+                <p>
+                    The ultimate experience!<br />
+                    Share the room with other people. You lead, everybody will synchronise with your rythm. Share an
+                    orgasm
+                    accross the world!
+                </p>
+            </section>
+        </div>
+        <div class=push></div>
+    </div>
+
+    <script>
+        function navigateToRoom() {
+            window.location.href = '/Room/' + (Math.random() + 1).toString(36).substr(2, 5);
+        }
+    </script>

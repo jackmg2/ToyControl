@@ -1,0 +1,123 @@
+button, .c_btn{
+        -webkit-border-radius: 0px;
+        -moz-border-radius: 0px;
+        border-radius: 0px;
+        color: #e6e6e6;
+        font-family: Nunito,sans-serif;
+        font-size: 1.5em;
+        font-weight: 100;
+        padding: 20px 10px;
+        background-color: #FF000000;
+        border: solid #e6e6e6 1px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+        margin-bottom: 12px;
+        margin-right: 12px;
+}
+
+a:hover{
+  background: #D04956;
+    color: white;
+    text-decoration: none;
+}
+
+button:hover, .c_btn:hover {
+    background: #D04956;
+    color: white;
+    text-decoration: none;
+ }
+
+.c_btn.small{
+  height: auto;
+  padding: 6px 10px;
+}
+
+.c_input{
+  background: transparent;
+  border: 0px;
+  border-bottom: solid #e6e6e6 1px;
+  color: white;
+  padding-left: 3px;
+  font-size: 1.5em;
+}
+.c_input:focus{
+  outline: none;
+}
+
+ button:disabled,
+button[disabled], .c_btn:disabled, .c_btn[disabled]{
+    border: solid rgba(150, 150, 150, 0.6) 1px;
+    background-color: rgba(89, 89, 89, 0.1);
+    color: rgba(150, 150, 150, 0.6);;
+    cursor: default;
+}
+
+.slidecontainer {
+    width: 100%;
+  }
+  
+  .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  }
+  
+  .slider:hover {
+    opacity: 1;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+
+  .sharing p{
+    font-size: 0.85em;
+    margin-bottom: 6px;
+  }
+
+  .sharing input{
+    background: transparent;
+    color: white;
+    border: solid #e6e6e6 1px;
+    font-size: 1em;
+    padding: 2px;
+    width: auto;
+    height: 1.5em;
+  }
+
+  .sharing{
+    margin-bottom: 12px;
+  }
+
+  .sharing .copy-btn{
+    height: 1.5em;
+    width: auto;
+    font-size: 1em;
+    padding: 2px;
+    margin: 0px;
+    color: white;
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  .sharing #copybtnlabel{
+font-size: 18px;
+  }

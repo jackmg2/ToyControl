@@ -1,0 +1,172 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+body{    
+    padding: 0px;
+    background-image: url("/background.jpg");
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    color: white;
+    font-family: Roboto,sans-serif;
+}
+
+#content{
+    min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -60px;
+}
+
+#buttons p{
+    display: inline-block;
+    width: 60%;
+    vertical-align: middle;
+}
+
+.notoy-link{
+    padding: 0;
+    text-align: center;
+    color: white;
+    text-decoration: underline;
+}
+
+.bold{
+    font-weight: 600;
+}
+
+.light{
+    font-weight: 100;
+}
+
+#content{
+    padding: 24px;
+    margin-left:auto;
+    margin-right:auto;
+    width: 60%;        
+}
+
+#overlay{
+    background-color: rgba(0, 0, 0, 0.40);
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    z-index: -99;
+    top: 0;
+  }
+
+  h1,h2,h3{
+    color: white;
+}
+
+h1{
+    text-align: center;
+}
+
+h2,h3{
+    font-weight: 100;
+}
+
+#devices-title{
+    margin-top: 24px;
+}
+
+#yourdevices li, #toys-devices li{
+    list-style: none;
+}
+
+#yourdevices, #toys-devices{
+    padding-left:0px;
+    margin-top: 0px;
+}
+
+section{
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+section a, section button{
+    width: 30%;
+    padding: 12px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.home p{
+    width: 50%;
+    display: inline-block;
+    color: white;
+    text-align: center;
+    vertical-align: middle;
+}
+
+button.toy{
+    margin-left:12px;
+}
+
+.btn{
+    color:white;
+}
+
+#feedback { font-size: 1.4em; }
+#users-list .ui-selecting { background: #FECA40; }
+#users-list .ui-selected { background: #F39814; color: white; }
+#users-list { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+li.list { margin: 3px; padding: 6px 3px; }
+
+#feedback { font-size: 1.4em; }
+#toys-list .ui-selecting { background: #FECA40; }
+#toys-list .ui-selected { background: #F39814; color: white; }
+#toys-list { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+
+input::placeholder {
+    font-size: 1.5rem;
+}
+
+footer p{
+    display: inline-block;
+    text-align: center;
+    margin: auto;
+    vertical-align: middle;
+}
+
+footer, .push {
+    height: 60px;
+    margin-left: 24px;
+    margin-right: 24px;
+    clear: both; /* .push must be the same height as .footer */  
+ }
+
+footer div{
+    margin: auto;
+    width: 30%;
+}
+
+.footer-link{
+    color: white;
+}
+
+.social-logo{
+    height: 16px;
+    margin-left: 3px;
+    margin-right: 1px;
+}
+
+#connectBtn{
+    width: auto;
+}
+
+@media only screen and (max-width: 768px) {
+    #content{
+      width: 100%;
+    }
+    .home p{
+        width: 60%;
+    }
+}

@@ -1,0 +1,59 @@
+<% layout('layout') -%>
+<div id="overlay"></div>
+<div id="content">
+
+    <h1><span class="bold">R</span><span class="light">oom</span></h1>
+    <div id="main">
+        <section id="identification" class="identification">
+            <input id="pseudo" type="text" class="required c_input" placeholder="enter your name" />
+            <button id="connectBtn" onclick="connect()" class="c_btn small">Connexion</button>
+        </section>
+
+        <section id="toys" class="toys" style="display: none;">
+            <h2 id="toySync" class="title toys" tabindex="-1"></h2>
+            <div id="buttons">
+                <button id="buttplug-local-button" class="c_btn">
+                    Sync
+                </button>
+                <p class="light">
+                    Chrome only on Windows 10 / macOS / Linux / Android / Chrome OS.
+                    <br />
+                    Do not forget to activate your bluetooth :)
+                </p>
+                <div class="clear" />
+                <a class="notoy-link" onclick="connectWithoutToys()">or enter without a toy</a>
+            </div>
+            <div id="output">
+                <h3 id="devices-title" style="display: none;">Your devices</h3>
+                <ul id="toys-devices">
+
+                </ul>
+            </div>
+            <button id="button-enterRoom" onclick="sendDevices()" class="c_btn" style="display: none;">Enter</button>
+        </section>
+
+        <section id="users" class="users" style="display: none;">
+
+            <h2 id="users-currentuser"></h2>
+            <ul id="yourdevices">
+
+            </ul>
+            <div class="sharing">
+                <p>Share this link to invite people</p>
+                <input id="room-link" readonly />
+                <button id="copybtn" class="copy-btn"><i id="copybtnlabel" class="material-icons">file_copy</i></button>
+            </div>
+
+            <h3>Partners</h3>
+            <ul id="users-list">
+
+            </ul>
+    </div>
+    </section>
+</div>
+<div class=push></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/buttplug.wrapper.js" defer></script>
+<script src="/room.js" defer></script>
