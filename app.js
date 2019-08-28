@@ -104,9 +104,6 @@ app.get('/solo', function (req, res) {
 app.get('/', function (req, res) {
     res.render('index', { title: 'ToyControl' });
 });
-app.get('/.well-known/acme-challenge/bPjofOpUDrNE_cxo9o6bmTFXxWgTS94NmSuAvD3y3sM', function (req, res) {
-    res.send('bPjofOpUDrNE_cxo9o6bmTFXxWgTS94NmSuAvD3y3sM.MZD-CQlS-ewPv0cvACC6kP6rHWT5Fpoi71AHg6Djn-o');
-});
 io.on('connection', function (socket) {
     console.log("a user connected");
     socket.on('newUser', function (newUser) {
