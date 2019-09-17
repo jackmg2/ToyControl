@@ -69,6 +69,16 @@ var Device = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Device.prototype, "PatternName", {
+        get: function () {
+            return this._patternName;
+        },
+        set: function (patternName) {
+            this._patternName = patternName;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Device.prototype, "ClientId", {
         get: function () {
             return this._clientId;
@@ -159,18 +169,34 @@ io.on('connection', function (socket) {
         console.log({ pseudo: socket.pseudo, message: message });
     });
     socket.on('start_toy', function (toyId) {
-        var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
-        var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
-        targetedToy.VibratingIntensity = 1;
-        io.to(socket.roomId).emit('users', { users: users });
-        usersSocket[targetedUser.Id.toString()].emit('start_local_toy', targetedToy.Device);
+        if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {
+            var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
+            var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
+            targetedToy.VibratingIntensity = 1;
+            io.to(socket.roomId).emit('users', { users: users });
+            usersSocket[targetedUser.Id.toString()].emit('start_local_toy', targetedToy.Device);
+        }
+    });
+    socket.on('start_pattern', function (toyId, patternName) {
+        console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
+        if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {
+            console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
+            var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
+            var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
+            targetedToy.VibratingIntensity = 1;
+            io.to(socket.roomId).emit('users', { users: users });
+            usersSocket[targetedUser.Id.toString()].emit('start_local_pattern', targetedToy.Device, patternName);
+        }
     });
     socket.on('stop_toy', function (toyId) {
-        var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
-        var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
-        targetedToy.VibratingIntensity = 0;
-        io.to(socket.roomId).emit('users', { users: users });
-        usersSocket[targetedUser.Id.toString()].emit('stop_local_toy', targetedToy.Device);
+        if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {
+            var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
+            var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
+            targetedToy.VibratingIntensity = 0;
+            targetedToy.PatternName = '';
+            io.to(socket.roomId).emit('users', { users: users });
+            usersSocket[targetedUser.Id.toString()].emit('stop_local_toy', targetedToy.Device);
+        }
     });
 });
 var server = http.listen(process.env.PORT || 3000, function () {
