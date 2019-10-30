@@ -151,13 +151,15 @@ function generate_device_list(device) {
   let li = document.createElement("li");
   li.classList.add('list');
   li.appendChild(document.createTextNode(device._device._name));
+  var br = document.createElement("br");
+  li.appendChild(br);  
 
   if (device._vibratingIntensity > 0) {
     let button = document.createElement("button");
     button.innerHTML = "Stop";
     button.setAttribute('id', device._id.value);
     button.setAttribute('onclick', 'stop(\'' + device._id.value + '\')');
-    button.setAttribute('class', 'toy btn');
+    button.setAttribute('class', 'c_btn');
     li.appendChild(button);
   }
   else {
@@ -165,7 +167,7 @@ function generate_device_list(device) {
     button.innerHTML = "Start";
     button.setAttribute('id', device._id.value);
     button.setAttribute('onclick', 'start(\'' + device._id.value + '\')');
-    button.setAttribute('class', 'toy btn');
+    button.setAttribute('class', 'c_btn');
     li.appendChild(button);
 
     let buttonLow = createButton("Low", device, 'playPattern(\'' + device._id.value + '\',' + '\'1\')');    
@@ -189,7 +191,11 @@ function createButton(text, device, method) {
   button.innerHTML = text;
   button.setAttribute('id', device._id.value);
   button.setAttribute('onclick', method);
+<<<<<<< HEAD
   button.setAttribute('class', 'toy btn');
+=======
+  button.setAttribute('class', 'c_btn');
+>>>>>>> 15fb41dd10bc7f0cad332bf6458f23972fb86d1d
 
   return button;
 }
@@ -200,12 +206,12 @@ function update_device_list(device) {
   if (device._vibratingIntensity > 0) {
     button.innerHTML = "Stop";
     button.setAttribute('onclick', 'stop(\'' + device._id.value + '\')');
-    button.setAttribute('class', 'toy btn');
+    button.setAttribute('class', 'c_btn');
   }
   else {
     button.innerHTML = "Start";
     button.setAttribute('onclick', 'start(\'' + device._id.value + '\')');
-    button.setAttribute('class', 'toy btn');
+    button.setAttribute('class', 'c_btn');
   }
 }
 

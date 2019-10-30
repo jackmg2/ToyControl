@@ -99,6 +99,15 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.engine('ejs', ejs);
 app.set('view engine', 'ejs');
+app.use(function (req, res, next) {
+    if (!req.secure && !req.headers.host.includes("localhost")) {
+        // request was via http, so redirect to https
+        res.redirect('https://' + req.headers.host + req.url);
+    }
+    else {
+        next();
+    }
+});
 app.use(express.static(__dirname + '/Assets'));
 app.set("port", process.env.PORT || 3000);
 var http = require("http").Server(app);
