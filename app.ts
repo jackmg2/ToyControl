@@ -43,6 +43,7 @@ class Device {
     readonly _id: Guid;
     private _clientId: Guid;
     private _vibratingIntensity: number;
+    private _patternName: String;
     private _device: any;
     public AllowedMessages: any;
 
@@ -63,6 +64,14 @@ class Device {
 
     set VibratingIntensity(vibratingIntensity: number) {
         this._vibratingIntensity = vibratingIntensity;
+    }
+
+    get PatternName(): String {
+        return this._patternName;
+    }
+
+    set PatternName(patternName: String) {
+        this._patternName = patternName;
     }
 
     get ClientId(): Guid {
@@ -157,19 +166,36 @@ io.on('connection', function (socket: any) {
     });
 
     socket.on('start_toy', function (toyId: Guid) {
-        let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
-        let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
-        targetedToy.VibratingIntensity = 1;
-        io.to(socket.roomId).emit('users', { users: users });
-        usersSocket[targetedUser.Id.toString()].emit('start_local_toy', targetedToy.Device);
+        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {
+            let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
+            let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
+            targetedToy.VibratingIntensity = 1;
+            io.to(socket.roomId).emit('users', { users: users });
+            usersSocket[targetedUser.Id.toString()].emit('start_local_toy', targetedToy.Device);
+        }
+    });
+
+    socket.on('start_pattern', function (toyId: Guid, patternName: String) {
+        console.log('ToyId: '+toyId+', pattern Name: '+patternName);
+        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {            
+            console.log('ToyId: '+toyId+', pattern Name: '+patternName);
+            let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
+            let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
+            targetedToy.VibratingIntensity = 1;
+            io.to(socket.roomId).emit('users', { users: users });
+            usersSocket[targetedUser.Id.toString()].emit('start_local_pattern', targetedToy.Device, patternName);
+        }
     });
 
     socket.on('stop_toy', function (toyId: Guid) {
-        let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
-        let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
-        targetedToy.VibratingIntensity = 0;
-        io.to(socket.roomId).emit('users', { users: users });
-        usersSocket[targetedUser.Id.toString()].emit('stop_local_toy', targetedToy.Device);
+        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {
+            let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
+            let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
+            targetedToy.VibratingIntensity = 0;
+            targetedToy.PatternName = '';
+            io.to(socket.roomId).emit('users', { users: users });
+            usersSocket[targetedUser.Id.toString()].emit('stop_local_toy', targetedToy.Device);
+        }
     });
 });
 
