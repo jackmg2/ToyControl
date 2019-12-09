@@ -88,12 +88,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.engine('ejs', ejs);
 app.set('view engine', 'ejs');
 
-app.use (function (req, res, next) {
+app.use(function (req, res, next) {
     if (!req.secure && !req.headers.host.includes("localhost")) {
-            // request was via http, so redirect to https
-            res.redirect('https://' + req.headers.host + req.url);
+        // request was via http, so redirect to https
+        res.redirect('https://' + req.headers.host + req.url);
     }
-    else{
+    else {
         next();
     }
 });
@@ -169,11 +169,12 @@ io.on('connection', function (socket: any) {
         console.log('End devices');
     });
 
-    // Chat instruction, coming soon
-    socket.on('message', function (message: string) {
-        message = ent.encode(message);
-        socket.to(socket.roomId).emit('message', { pseudo: socket.pseudo, message: message });
-        console.log({ pseudo: socket.pseudo, message: message });
+    socket.on('chat-message', function (message: string) {
+        if (message != '' && socket.pseudo != '') {
+            message = ent.encode(message);
+            io.to(socket.roomId).emit('chat-message', { pseudo: socket.pseudo, message: message });
+            console.log({ pseudo: socket.pseudo, message: message });
+        }
     });
 
     socket.on('start_toy', function (toyId: Guid) {
@@ -187,9 +188,9 @@ io.on('connection', function (socket: any) {
     });
 
     socket.on('start_pattern', function (toyId: Guid, patternName: String) {
-        console.log('ToyId: '+toyId+', pattern Name: '+patternName);
-        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {            
-            console.log('ToyId: '+toyId+', pattern Name: '+patternName);
+        console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
+        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {
+            console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
             let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
             let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
             targetedToy.VibratingIntensity = 1;

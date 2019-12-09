@@ -171,11 +171,12 @@ io.on('connection', function (socket) {
         console.log({ pseudo: socket.pseudo, devices: socket.devices });
         console.log('End devices');
     });
-    // Chat instruction, coming soon
-    socket.on('message', function (message) {
-        message = ent.encode(message);
-        socket.to(socket.roomId).emit('message', { pseudo: socket.pseudo, message: message });
-        console.log({ pseudo: socket.pseudo, message: message });
+    socket.on('chat-message', function (message) {
+        if (message != '' && socket.pseudo != '') {
+            message = ent.encode(message);
+            io.to(socket.roomId).emit('chat-message', { pseudo: socket.pseudo, message: message });
+            console.log({ pseudo: socket.pseudo, message: message });
+        }
     });
     socket.on('start_toy', function (toyId) {
         if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {

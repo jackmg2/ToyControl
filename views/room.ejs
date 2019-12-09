@@ -45,15 +45,32 @@
             </div>
 
             <h3>Partners</h3>
+            <p class="noselect"><span id="chat-button" style="cursor: pointer;"><i class="material-icons">chat</i><span style="vertical-align: top; margin-left: 6px;">Chat</span></span></p>
             <ul id="users-list">
 
             </ul>
+        </section>
     </div>
-    </section>
+
+    
+</div>
+<div id="chat">
+    <div id="chat-content" class="chat closed">
+            <p class="noselect" style="float: right;cursor: pointer;"><span id="chat-close-button"><i class="material-icons">close</i></span></p>
+        <div id="chat-input">
+            <input id="chat-messageinput" class="c_input" type="text" />
+            <button id="chat-sendmessage" class="copy-btn"><i id="sendbtnlabel"
+                    class="material-icons">send</i></button>
+        </div>
+        <div id="chat-messages">
+
+        </div>
+    </div>
 </div>
 <div class=push></div>
 </div>
 
+<script src="/chat.js" defer></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/buttplug.wrapper.js" defer></script>
 <script src="/toycontrol-commons.js" defer></script>

@@ -1,0 +1,33 @@
+#chat-content{
+    height: 50%; 
+    position: fixed; 
+    bottom:0%;
+    width:100%; 
+    background-color: #000; 
+    opacity: 0.75;
+    padding: 12px;
+}
+
+#chat-input{
+    width: 100%;
+    margin: auto;
+    text-align: center;
+}
+
+#chat-messageinput{
+    font-size: 1em;
+}
+
+#chat-sendmessage{
+    height: 40px;
+    width: 40px;
+    padding: 0px;
+    margin: 0px;
+    color: white;
+}
+
+#chat-messages{
+    height: 70%;
+    overflow-y:auto; 
+    margin-top: 12px;
+}

@@ -1,7 +1,13 @@
 var socket = io.connect();
 var users = new Array();
 var currentUser;
+chat.init(socket);
 
+document.getElementById("pseudo").addEventListener('keyup',function (event) {
+  if (event.keyCode === 13) {
+    connect();
+  }
+});
 
 socket.on('identity', function (user) {
   currentUser = user;
@@ -15,9 +21,6 @@ socket.on('users', function (data) {
     data.users.forEach(function (user) {
       if (user._id.value != currentUser._id.value) {
         createUserMenu(user);
-      }
-      else {
-
       }
     });
   }
@@ -191,11 +194,7 @@ function createButton(text, device, method) {
   button.innerHTML = text;
   button.setAttribute('id', device._id.value);
   button.setAttribute('onclick', method);
-<<<<<<< HEAD
-  button.setAttribute('class', 'toy btn');
-=======
   button.setAttribute('class', 'c_btn');
->>>>>>> 15fb41dd10bc7f0cad332bf6458f23972fb86d1d
 
   return button;
 }
@@ -292,3 +291,4 @@ var syncButton = $("#buttplug-local-button");
 syncButton.on("click", function (evt) { ButtplugWrapper.connectToys(); });
 $("#room-link").val(window.location);
 $("#copybtn").on("click", copy);
+
