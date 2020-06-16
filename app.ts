@@ -42,8 +42,8 @@ class User {
 class Device {
     readonly _id: Guid;
     private _clientId: Guid;
-    private _vibratingIntensity: number;
-    private _patternName: String;
+    private _currentState: DeviceState;
+    private _targetedState: DeviceState;
     private _device: any;
     public AllowedMessages: any;
 
@@ -54,24 +54,24 @@ class Device {
         this.AllowedMessages = device.AllowedMessages;
     }
 
+    get CurrentState(): DeviceState {
+        return this._currentState;
+    }
+
+    set CurrentState(currentState: DeviceState) {
+        this._currentState = currentState;
+    }
+
+    get TargetedState(): DeviceState {
+        return this._targetedState;
+    }
+
+    set TargetedState(targetedState: DeviceState) {
+        this._targetedState = targetedState;
+    }
+
     get Device(): any {
         return this._device;
-    }
-
-    get VibratingIntensity(): number {
-        return this._vibratingIntensity;
-    }
-
-    set VibratingIntensity(vibratingIntensity: number) {
-        this._vibratingIntensity = vibratingIntensity;
-    }
-
-    get PatternName(): String {
-        return this._patternName;
-    }
-
-    set PatternName(patternName: String) {
-        this._patternName = patternName;
     }
 
     get ClientId(): Guid {
@@ -83,13 +83,34 @@ class Device {
     }
 }
 
+class DeviceState {
+    private _intensity: number;
+    private _patternName: String;
+
+    constructor(intensity, patternName) {
+        this._intensity = intensity;
+        this._patternName = patternName;
+    }
+
+    get Intensity(): number {
+        return this._intensity;
+    }
+
+    get PatternName(): String {
+        return this._patternName;
+    }
+}
+
 const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.engine('ejs', ejs);
 app.set('view engine', 'ejs');
 
 app.use(function (req, res, next) {
-    if (!req.secure && !req.headers.host.includes("localhost")) {
+    console.log("req:" + req.url);
+    var xforwardedproto = req.headers["x-forwarded-proto"];
+
+    if (xforwardedproto !== "https" && !req.headers.host.includes("localhost")) {
         // request was via http, so redirect to https
         res.redirect('https://' + req.headers.host + req.url);
     }
@@ -118,8 +139,10 @@ app.get('/', function (req, res) {
 });
 
 io.on('connection', function (socket: any) {
-    console.log("a user connected");
+    console.log("An user just arrived.");
+
     socket.on('newUser', function (newUser: any) {
+        console.log("It's "+newUser.pseudo);
         newUser.pseudo = ent.encode(newUser.pseudo);
         let user = new User(newUser.pseudo, newUser.room);
         usersSocket[user.Id.toString()] = socket;
@@ -130,43 +153,42 @@ io.on('connection', function (socket: any) {
         socket.userId = user.Id;
         users.push(user);
         socket.emit('identity', user);
+
+        let roomUsers = users.filter(u => u.RoomId == socket.roomId);
+
+        console.log({ users: users });
+        console.log({ roomUsers: roomUsers });
+        console.log({ pseudo: socket.pseudo, devices: socket.devices });
+        
+        io.to(socket.roomId).emit('users', { users: roomUsers });
     });
 
     socket.on('disconnect', function () {
-        console.log(socket.pseudo + ' left.');
         usersSocket[socket.userId] = null;
         let correspondingUser = users.filter(u => u.Id == socket.userId);
         if (correspondingUser.length > 0) {
             let currentUser = correspondingUser[0];
             users.splice(users.indexOf(currentUser), 1);
             io.to(socket.roomId).emit('users', { users: users });
-            console.log('Users still connected:');
-            console.log({ users: users });
         }
     });
 
     socket.on('devices', function (devices: any) {
         socket.devices = devices;
-        console.log('Begin devices');
+
         let currentUser = users.filter(u => u.Id == socket.userId)[0];
         if (devices != null) {
-            devices.forEach(function (device) {
-                if (currentUser.Devices !== undefined) {
-                    currentUser.Devices.push(new Device(currentUser.Id, device));
-                }
-            });
             if (currentUser.Devices !== undefined) {
+                currentUser.Devices = new Array<Device>();
+                devices.forEach(function (device) {
+                    currentUser.Devices.push(new Device(currentUser.Id, device));
+                });
                 console.log(currentUser.Devices);
             }
         }
-        console.log('roomId:' + socket.roomId);
+        
         let roomUsers = users.filter(u => u.RoomId == socket.roomId);
         io.to(socket.roomId).emit('users', { users: roomUsers });
-        console.log({ users: users });
-        console.log({ roomUsers: roomUsers });
-        console.log({ pseudo: socket.pseudo, devices: socket.devices });
-
-        console.log('End devices');
     });
 
     socket.on('chat-message', function (message: string) {
@@ -177,36 +199,26 @@ io.on('connection', function (socket: any) {
         }
     });
 
-    socket.on('start_toy', function (toyId: Guid) {
+    socket.on('change_state', function (toyId: Guid, intensity: number, patternName: String) {
         if (users.some(u => u.Devices.some(d => d.Id == toyId))) {
             let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
             let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
-            targetedToy.VibratingIntensity = 1;
-            io.to(socket.roomId).emit('users', { users: users });
-            usersSocket[targetedUser.Id.toString()].emit('start_local_toy', targetedToy.Device);
+            targetedToy.TargetedState = new DeviceState(intensity, patternName);
+
+            usersSocket[targetedUser.Id.toString()].emit('change_state', targetedToy);            
         }
     });
 
-    socket.on('start_pattern', function (toyId: Guid, patternName: String) {
-        console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
-        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {
-            console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
-            let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
-            let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
-            targetedToy.VibratingIntensity = 1;
-            io.to(socket.roomId).emit('users', { users: users });
-            usersSocket[targetedUser.Id.toString()].emit('start_local_pattern', targetedToy.Device, patternName);
-        }
-    });
+    socket.on('update_state', function (serialized_device: any) {
+        //Weird behavior if we don't do that        
+        var s = JSON.stringify(serialized_device);
+        let device = JSON.parse(s);
 
-    socket.on('stop_toy', function (toyId: Guid) {
-        if (users.some(u => u.Devices.some(d => d.Id == toyId))) {
-            let targetedUser = users.filter(u => u.Devices.some(d => d.Id == toyId))[0];
-            let targetedToy = targetedUser.Devices.filter(d => d.Id == toyId)[0];
-            targetedToy.VibratingIntensity = 0;
-            targetedToy.PatternName = '';
-            io.to(socket.roomId).emit('users', { users: users });
-            usersSocket[targetedUser.Id.toString()].emit('stop_local_toy', targetedToy.Device);
+        if (users.some(u => u.Devices.some(d => d.Id.toString() == device._id.value))) {            
+            let targetedUser = users.filter(u => u.Devices.some(d => d.Id.toString() == device._id.value))[0];            
+            let targetedToy = targetedUser.Devices.filter(d => d.Id.toString() == device._id.value)[0];            
+            targetedToy.CurrentState = device._currentState;
+            io.to(socket.roomId).emit('users', { users: users });            
         }
     });
 });

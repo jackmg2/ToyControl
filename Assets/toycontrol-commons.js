@@ -13,15 +13,18 @@ var ToyControlCommons = {
         if (ToyControlCommons.timeInterval) {
             clearInterval(ToyControlCommons.timeInterval);
         }
-        setTimeout(function () { ToyControlCommons.vibrate(device, 0); }, 500);
+    },
+    stopVibrating: (device) => {
+        ToyControlCommons._vibrate(device, 0);
     },
     startPattern: (device, patternName) => {
         ToyControlCommons.stopPatternInterval(device);
+        ToyControlCommons.stopVibrating(device);
 
         let pattern;
         switch (patternName) {
             case '1':
-                pattern =ToyControlCommons.playPatternLow;
+                pattern = ToyControlCommons.playPatternLow;
                 break;
             case '2':
                 pattern = ToyControlCommons.playPatternMiddle;
@@ -42,7 +45,7 @@ var ToyControlCommons = {
         ToyControlCommons.timeInterval = setInterval(() => {
             pattern(device, new Date() - ToyControlCommons.patternDateStarted);
         }, 10);
-    },    
+    },
     playPatternLow: (device, millisecondsEllapsed) => {
         ToyControlCommons.playPatternTimed(device, millisecondsEllapsed, 1, 500);
     },
@@ -55,12 +58,13 @@ var ToyControlCommons = {
     playPatternTimed: (device, millisecondsEllapsed, intensity, rythm) => {
         let millisecondsRounded = Math.round(millisecondsEllapsed / 10) * 10;
         let modulo = millisecondsRounded % rythm;
+        
         if (modulo == 0) {
             if (device.isVibrating) {
-                ToyControlCommons.vibrate(device, 0);
+                ToyControlCommons._vibrate(device, 0);
             }
             else {
-                ToyControlCommons.vibrate(device, intensity);
+                ToyControlCommons._vibrate(device, intensity);
             }
         }
     },
@@ -68,21 +72,23 @@ var ToyControlCommons = {
         let timeInSeconds = millisecondsEllapsed / 1000;
         let milliseconds = timeInSeconds - Math.trunc(timeInSeconds);
         if (device.isVibrating && milliseconds < 0.2) {
-            ToyControlCommons.vibrate(device, 0);
+            ToyControlCommons._vibrate(device, 0);
         }
         else {
-            ToyControlCommons.vibrate(device, milliseconds);
+            ToyControlCommons._vibrate(device, milliseconds);
         }
     },
-    vibrate: (device, vibration) => {
+    vibrate: async (device, vibration) => {
+        ToyControlCommons.stopPatternInterval(device);        
+        ToyControlCommons._vibrate(device, vibration);
+    },
+    _vibrate: (device, vibration) => {
         ButtplugWrapper.vibrate(device, vibration);
         if (vibration == 0) {
             device.isVibrating = false;
-            console.log('off');
         }
         else {
             device.isVibrating = true;
-            console.log('on');
         }
     }
 

@@ -1,33 +1,24 @@
 var ButtplugWrapper = {
     client: null,
     init: (viewInitializer)=>{this.viewInitializer = viewInitializer;},
-    connectToys: async (connectAddress) => {
-        if (connectAddress == 'debug') {
-            ButtplugDevTools.CreateLoggerPanel(Buttplug.ButtplugLogger.Logger);
-            ButtplugWrapper.client = await ButtplugDevTools.CreateDevToolsClient(Buttplug.ButtplugLogger.Logger);
-            ButtplugDevTools.CreateDeviceManagerPanel(client.Connector.Server);
-        }
-        else {
-            ButtplugWrapper.client = new Buttplug.ButtplugClient("Tutorial Client");
-        }
-    
+    connectToys: async (connectAddress) => {        
+        ButtplugWrapper.client = new Buttplug.ButtplugClient("ButtplugClient");        
+        
         this.viewInitializer.init();
     
         ButtplugWrapper.client.addListener('deviceadded', async (device) => {
+            viewInitializer.deviceAdded(device);
             viewInitializer.generateli(device);
             await ButtplugWrapper.client.StopScanning();
         });
         ButtplugWrapper.client.addListener('deviceremoved', async (device) => {
-            viewInitializer.removeli(device);
+            viewInitializer.removeli(device);            
         });
     
         try {
-            if (connectAddress !== undefined && connectAddress !== 'debug') {
+            if (connectAddress !== undefined) {
                 const connector = new Buttplug.ButtplugBrowserWebsocketClientConnector("wss://localhost:12345/buttplug");
                 await ButtplugWrapper.client.Connect(connector);
-            }
-            else if (connectAddress == 'debug') {
-    
             }
             else {
                 const connector = new Buttplug.ButtplugEmbeddedClientConnector();
@@ -45,7 +36,7 @@ var ButtplugWrapper = {
           await device.SendVibrateCmd(intensity);
         }
         catch (e) {
-            viewInitializer.connexionLostHandler(e);
+            viewInitializer.connexionLostHandler(e, device);
         }
       }
 }

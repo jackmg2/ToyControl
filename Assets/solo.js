@@ -63,7 +63,7 @@ viewInitializer = {
       $('#devices-title').hide();
     }
   },
-  connexionLostHandler: (exception) => {
+  connexionLostHandler: (exception, device) => {
     if (exception.message.includes("not available")) {
       viewInitializer.removeli(device);
       console.log("Device lost.");

@@ -52,29 +52,29 @@ var Device = /** @class */ (function () {
         this._device = device;
         this.AllowedMessages = device.AllowedMessages;
     }
+    Object.defineProperty(Device.prototype, "CurrentState", {
+        get: function () {
+            return this._currentState;
+        },
+        set: function (currentState) {
+            this._currentState = currentState;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Device.prototype, "TargetedState", {
+        get: function () {
+            return this._targetedState;
+        },
+        set: function (targetedState) {
+            this._targetedState = targetedState;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Device.prototype, "Device", {
         get: function () {
             return this._device;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Device.prototype, "VibratingIntensity", {
-        get: function () {
-            return this._vibratingIntensity;
-        },
-        set: function (vibratingIntensity) {
-            this._vibratingIntensity = vibratingIntensity;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Device.prototype, "PatternName", {
-        get: function () {
-            return this._patternName;
-        },
-        set: function (patternName) {
-            this._patternName = patternName;
         },
         enumerable: true,
         configurable: true
@@ -95,12 +95,35 @@ var Device = /** @class */ (function () {
     });
     return Device;
 }());
+var DeviceState = /** @class */ (function () {
+    function DeviceState(intensity, patternName) {
+        this._intensity = intensity;
+        this._patternName = patternName;
+    }
+    Object.defineProperty(DeviceState.prototype, "Intensity", {
+        get: function () {
+            return this._intensity;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DeviceState.prototype, "PatternName", {
+        get: function () {
+            return this._patternName;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return DeviceState;
+}());
 var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.engine('ejs', ejs);
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
-    if (!req.secure && !req.headers.host.includes("localhost")) {
+    console.log("req:" + req.url);
+    var xforwardedproto = req.headers["x-forwarded-proto"];
+    if (xforwardedproto !== "https" && !req.headers.host.includes("localhost")) {
         // request was via http, so redirect to https
         res.redirect('https://' + req.headers.host + req.url);
     }
@@ -124,8 +147,9 @@ app.get('/', function (req, res) {
     res.render('index', { title: 'ToyControl' });
 });
 io.on('connection', function (socket) {
-    console.log("a user connected");
+    console.log("An user just arrived.");
     socket.on('newUser', function (newUser) {
+        console.log("It's " + newUser.pseudo);
         newUser.pseudo = ent.encode(newUser.pseudo);
         var user = new User(newUser.pseudo, newUser.room);
         usersSocket[user.Id.toString()] = socket;
@@ -136,40 +160,35 @@ io.on('connection', function (socket) {
         socket.userId = user.Id;
         users.push(user);
         socket.emit('identity', user);
+        var roomUsers = users.filter(function (u) { return u.RoomId == socket.roomId; });
+        console.log({ users: users });
+        console.log({ roomUsers: roomUsers });
+        console.log({ pseudo: socket.pseudo, devices: socket.devices });
+        io.to(socket.roomId).emit('users', { users: roomUsers });
     });
     socket.on('disconnect', function () {
-        console.log(socket.pseudo + ' left.');
         usersSocket[socket.userId] = null;
         var correspondingUser = users.filter(function (u) { return u.Id == socket.userId; });
         if (correspondingUser.length > 0) {
             var currentUser = correspondingUser[0];
             users.splice(users.indexOf(currentUser), 1);
             io.to(socket.roomId).emit('users', { users: users });
-            console.log('Users still connected:');
-            console.log({ users: users });
         }
     });
     socket.on('devices', function (devices) {
         socket.devices = devices;
-        console.log('Begin devices');
         var currentUser = users.filter(function (u) { return u.Id == socket.userId; })[0];
         if (devices != null) {
-            devices.forEach(function (device) {
-                if (currentUser.Devices !== undefined) {
-                    currentUser.Devices.push(new Device(currentUser.Id, device));
-                }
-            });
             if (currentUser.Devices !== undefined) {
+                currentUser.Devices = new Array();
+                devices.forEach(function (device) {
+                    currentUser.Devices.push(new Device(currentUser.Id, device));
+                });
                 console.log(currentUser.Devices);
             }
         }
-        console.log('roomId:' + socket.roomId);
         var roomUsers = users.filter(function (u) { return u.RoomId == socket.roomId; });
         io.to(socket.roomId).emit('users', { users: roomUsers });
-        console.log({ users: users });
-        console.log({ roomUsers: roomUsers });
-        console.log({ pseudo: socket.pseudo, devices: socket.devices });
-        console.log('End devices');
     });
     socket.on('chat-message', function (message) {
         if (message != '' && socket.pseudo != '') {
@@ -178,34 +197,23 @@ io.on('connection', function (socket) {
             console.log({ pseudo: socket.pseudo, message: message });
         }
     });
-    socket.on('start_toy', function (toyId) {
+    socket.on('change_state', function (toyId, intensity, patternName) {
         if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {
             var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
             var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
-            targetedToy.VibratingIntensity = 1;
-            io.to(socket.roomId).emit('users', { users: users });
-            usersSocket[targetedUser.Id.toString()].emit('start_local_toy', targetedToy.Device);
+            targetedToy.TargetedState = new DeviceState(intensity, patternName);
+            usersSocket[targetedUser.Id.toString()].emit('change_state', targetedToy);
         }
     });
-    socket.on('start_pattern', function (toyId, patternName) {
-        console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
-        if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {
-            console.log('ToyId: ' + toyId + ', pattern Name: ' + patternName);
-            var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
-            var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
-            targetedToy.VibratingIntensity = 1;
+    socket.on('update_state', function (serialized_device) {
+        //Weird behavior if we don't do that        
+        var s = JSON.stringify(serialized_device);
+        var device = JSON.parse(s);
+        if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id.toString() == device._id.value; }); })) {
+            var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id.toString() == device._id.value; }); })[0];
+            var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id.toString() == device._id.value; })[0];
+            targetedToy.CurrentState = device._currentState;
             io.to(socket.roomId).emit('users', { users: users });
-            usersSocket[targetedUser.Id.toString()].emit('start_local_pattern', targetedToy.Device, patternName);
-        }
-    });
-    socket.on('stop_toy', function (toyId) {
-        if (users.some(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })) {
-            var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id == toyId; }); })[0];
-            var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id == toyId; })[0];
-            targetedToy.VibratingIntensity = 0;
-            targetedToy.PatternName = '';
-            io.to(socket.roomId).emit('users', { users: users });
-            usersSocket[targetedUser.Id.toString()].emit('stop_local_toy', targetedToy.Device);
         }
     });
 });

@@ -3,7 +3,7 @@ var users = new Array();
 var currentUser;
 chat.init(socket);
 
-document.getElementById("pseudo").addEventListener('keyup',function (event) {
+document.getElementById("pseudo").addEventListener('keyup', function (event) {
   if (event.keyCode === 13) {
     connect();
   }
@@ -14,77 +14,63 @@ socket.on('identity', function (user) {
 });
 
 socket.on('users', function (data) {
-  console.log('data: ' + data);
   //First init or user left
-  if (users.length <= 0 || users.length > data.users.length) {
-    $('#users-list').empty();
-    data.users.forEach(function (user) {
-      if (user._id.value != currentUser._id.value) {
-        createUserMenu(user);
-      }
-    });
-  }
-  //New user
-  else if (users.length < data.users.length) {
-    var diff = data.users.filter(du => !users.some(u => u._id.value == du._id.value));
-    diff.forEach(function (user) {
-      if (user._id.value != currentUser._id.value) {
-        createUserMenu(user);
-      }
-      else {
-
-      }
-    });
-  }
-  //Device update
-  else {
-    $('#toys-list').empty();
-    $("#users-list").each(function () {
-      var id = $("#users-list li").attr('id');
-
-      var user = data.users.filter(u => u._id.value == id)[0];
-      user._devices.forEach(function (device) {
-        update_device_list(device);
-      });
-    });
-  }
+  //if (users.length <= 0 || users.length > data.users.length) {
+  $('#users-list').empty();
+  data.users.forEach(function (user) {
+    if (user._id.value != currentUser._id.value) {
+      createUserMenu(user);
+    }
+  });
+  // }
+  // //New user
+  // else if (users.length < data.users.length) {
+  //   var diff = data.users.filter(du => !users.some(u => u._id.value == du._id.value));
+  //   diff.forEach(function (user) {
+  //     if (user._id.value != currentUser._id.value) {
+  //       createUserMenu(user);
+  //     }
+  //   });
+  // }
+  // //Device update
+  // else {
+  //   $('#toys-list').empty();
+  //   $("#users-list li").each(function () {
+  //     var id = $("#users-list li").attr('id');
+  //     if (id !== undefined) {
+  //       var user = data.users.filter(u => u._id.value == id)[0];
+  //       user._devices.forEach(function (device) {
+  //         update_device_list(device);
+  //       });
+  //     }
+  //   });
+  // }
 
   users = data.users;
-  console.log('users: ' + users);
 });
 
 
-socket.on('start_local_toy', function (device) {
+socket.on('change_state', function (device) {
   let ul = $('#yourdevices');
   ButtplugWrapper.client.Devices.forEach(async function (d) {
-    if (d.Name == device._name) {
-      await ButtplugWrapper.vibrate(d, 1.0);
-    }
-    li = updateDeviceLi(d, true);
-    ul.append(li);
-  });
-});
+    if (d.Name == device._device._name && d.isFaulty !== true) {
+      if (device._targetedState._patternName !== undefined && device._targetedState._patternName !== "") {
+        ToyControlCommons.startPattern(d, device._targetedState._patternName);
+      }
+      else if (device._targetedState._intensity > 0) {
+        await ToyControlCommons.vibrate(d, device._targetedState._intensity);
+      }
+      else {
+        ToyControlCommons.stopPatternInterval(d);
+        ToyControlCommons.stopVibrating(d);
+      }
 
-socket.on('start_local_pattern', function (device, patternName) {
-  let ul = $('#yourdevices');
-  ButtplugWrapper.client.Devices.forEach(async function (d) {
-    if (d.Name == device._name) {
-      ToyControlCommons.startPattern(d, patternName);
-    }
-    li = updateDeviceLi(d, true);
-    ul.append(li);
-  });
-});
+      device._currentState = device._targetedState;
+      socket.emit('update_state', device);
 
-socket.on('stop_local_toy', function (device) {
-  let ul = $('#yourdevices');
-  ButtplugWrapper.client.Devices.forEach(async function (d) {
-    if (d.Name == device._name) {
-      await ToyControlCommons.stopPatternInterval(d);
+      li = updateDeviceLi(d, true);
+      ul.append(li);
     }
-
-    li = updateDeviceLi(d, false);
-    ul.append(li);
   });
 });
 
@@ -116,38 +102,22 @@ function connect() {
     socket.emit('newUser', newUser);
     $(".identification").hide();
     $(".toys").show();
-    $(".users").hide();
+    $(".users").show();
     $("#toySync").html("<span class='light'>Welcome</span> <span class='bold'>" + pseudo + "</span>");
     $("#users-currentuser").html('<span class="light">You, </span><span class="bold">' + pseudo + '</span>');
   }
 }
 
 function start(toyId) {
-  socket.emit('start_toy', toyId);
+  socket.emit('change_state', toyId, 1, "");
 }
 
 function playPattern(toyId, patternName) {
-  socket.emit('start_pattern', toyId, patternName);
+  socket.emit('change_state', toyId, 1, patternName);
 }
 
 function stop(toyId) {
-  socket.emit('stop_toy', toyId);
-}
-
-function sendDevices() {
-  console.log('sendDevices():' + ButtplugWrapper.client.Devices);
-  socket.emit("devices", ButtplugWrapper.client.Devices);
-  $(".identification").hide();
-  $(".toys").hide();
-  $(".users").show();
-}
-
-function connectWithoutToys() {
-  console.log('connectWithoutToys()');
-  socket.emit("devices", null);
-  $(".identification").hide();
-  $(".toys").hide();
-  $(".users").show();
+  socket.emit('change_state', toyId, 0, "");
 }
 
 function generate_device_list(device) {
@@ -155,9 +125,9 @@ function generate_device_list(device) {
   li.classList.add('list');
   li.appendChild(document.createTextNode(device._device._name));
   var br = document.createElement("br");
-  li.appendChild(br);  
+  li.appendChild(br);
 
-  if (device._vibratingIntensity > 0) {
+  if (device._currentState !== undefined && device._currentState._intensity > 0) {
     let button = document.createElement("button");
     button.innerHTML = "Stop";
     button.setAttribute('id', device._id.value);
@@ -173,16 +143,16 @@ function generate_device_list(device) {
     button.setAttribute('class', 'c_btn');
     li.appendChild(button);
 
-    let buttonLow = createButton("Low", device, 'playPattern(\'' + device._id.value + '\',' + '\'1\')');    
+    let buttonLow = createButton("Low", device, 'playPattern(\'' + device._id.value + '\',' + '\'1\')');
     li.appendChild(buttonLow);
 
-    let buttonMiddle = createButton("Middle", device, 'playPattern(\'' + device._id.value + '\',' + '\'2\')');    
+    let buttonMiddle = createButton("Middle", device, 'playPattern(\'' + device._id.value + '\',' + '\'2\')');
     li.appendChild(buttonMiddle);
 
-    let buttonHigh = createButton("High", device, 'playPattern(\'' + device._id.value + '\',' + '\'3\')');    
+    let buttonHigh = createButton("High", device, 'playPattern(\'' + device._id.value + '\',' + '\'3\')');
     li.appendChild(buttonHigh);
 
-    let buttonOrgasmic = createButton("Orgasmic", device, 'playPattern(\'' + device._id.value + '\',' + '\'4\')');    
+    let buttonOrgasmic = createButton("Orgasmic", device, 'playPattern(\'' + device._id.value + '\',' + '\'4\')');
     li.appendChild(buttonOrgasmic);
   }
 
@@ -202,15 +172,20 @@ function createButton(text, device, method) {
 function update_device_list(device) {
   let button = $("#" + device._id.value)[0];
 
-  if (device._vibratingIntensity > 0) {
-    button.innerHTML = "Stop";
-    button.setAttribute('onclick', 'stop(\'' + device._id.value + '\')');
-    button.setAttribute('class', 'c_btn');
+  if (button !== undefined) {
+    if (device._vibratingIntensity > 0) {
+      button.innerHTML = "Stop";
+      button.setAttribute('onclick', 'stop(\'' + device._id.value + '\')');
+      button.setAttribute('class', 'c_btn');
+    }
+    else {
+      button.innerHTML = "Start";
+      button.setAttribute('onclick', 'start(\'' + device._id.value + '\')');
+      button.setAttribute('class', 'c_btn');
+    }
   }
   else {
-    button.innerHTML = "Start";
-    button.setAttribute('onclick', 'start(\'' + device._id.value + '\')');
-    button.setAttribute('class', 'c_btn');
+    generate_device_list(device);
   }
 }
 
@@ -270,10 +245,16 @@ viewInitializer = {
       $('#button-enterRoom').hide();
     }
   },
-  connexionLostHandler: (exception) => {
-    if (exception.message.includes("not available")) {
-      viewInitializer.removeli(device);
-      console.log("Device lost.");
+  deviceAdded: (device) => {
+    socket.emit("devices", ButtplugWrapper.client.Devices);
+  },
+  connexionLostHandler: (exception, device) => {
+    if (exception.message.includes("not available") && device.isFaulty !== true) {
+      console.log("device lost");
+      sendDevices();
+      ToyControlCommons.stopPatternInterval(device);
+      device.isFaulty = true;
+      ButtplugWrapper.connectToys();
     }
   }
 }
