@@ -4,10 +4,16 @@
 
     <h1><span class="bold">R</span><span class="light">oom</span></h1>
     <div id="main">
+        <div class="sharing">
+            <p>Share this link to invite people</p>
+            <input id="room-link" readonly />
+            <button id="copybtn" class="copy-btn"><i id="copybtnlabel" class="material-icons">file_copy</i></button>
+        </div>
+        
         <section id="identification" class="identification">
             <input id="pseudo" type="text" class="required c_input" placeholder="enter your name" />
             <button id="connectBtn" onclick="connect()" class="c_btn small">Connexion</button>
-        </section>
+        </section>        
 
         <section id="toys" class="toys" style="display: none;">
             <h2 id="toySync" class="title toys" tabindex="-1"></h2>
@@ -21,13 +27,7 @@
                     Do not forget to activate your bluetooth :)
                 </p>
                 <div class="clear" />
-            </div>
-            <div id="output">
-                <h3 id="devices-title" style="display: none;">Your devices</h3>
-                <ul id="toys-devices">
-
-                </ul>
-            </div>
+            </div>            
         </section>
 
         <section id="users" class="users" style="display: none;">
@@ -35,12 +35,7 @@
             <h2 id="users-currentuser"></h2>
             <ul id="yourdevices">
 
-            </ul>
-            <div class="sharing">
-                <p>Share this link to invite people</p>
-                <input id="room-link" readonly />
-                <button id="copybtn" class="copy-btn"><i id="copybtnlabel" class="material-icons">file_copy</i></button>
-            </div>
+            </ul>            
 
             <h3>Partners</h3>
             <p class="noselect"><span id="chat-button" style="cursor: pointer;"><i class="material-icons">chat</i><span style="vertical-align: top; margin-left: 6px;">Chat</span></span></p>

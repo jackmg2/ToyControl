@@ -58,5 +58,6 @@ var chat = {
         let p = document.createElement("p");
         p.textContent = envelope.pseudo + ': ' + envelope.message;
         chat.messages.append(p);
+        chat.messages.scrollTop = chat.messages.scrollHeight;
     }
 };

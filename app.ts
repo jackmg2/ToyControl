@@ -169,7 +169,9 @@ io.on('connection', function (socket: any) {
         if (correspondingUser.length > 0) {
             let currentUser = correspondingUser[0];
             users.splice(users.indexOf(currentUser), 1);
-            io.to(socket.roomId).emit('users', { users: users });
+
+            let roomUsers = users.filter(u => u.RoomId == socket.roomId);
+            io.to(socket.roomId).emit('users', { users: roomUsers });
         }
     });
 
@@ -193,7 +195,7 @@ io.on('connection', function (socket: any) {
 
     socket.on('chat-message', function (message: string) {
         if (message != '' && socket.pseudo != '') {
-            message = ent.encode(message);
+            message = message;
             io.to(socket.roomId).emit('chat-message', { pseudo: socket.pseudo, message: message });
             console.log({ pseudo: socket.pseudo, message: message });
         }
@@ -218,7 +220,9 @@ io.on('connection', function (socket: any) {
             let targetedUser = users.filter(u => u.Devices.some(d => d.Id.toString() == device._id.value))[0];            
             let targetedToy = targetedUser.Devices.filter(d => d.Id.toString() == device._id.value)[0];            
             targetedToy.CurrentState = device._currentState;
-            io.to(socket.roomId).emit('users', { users: users });            
+
+            let roomUsers = users.filter(u => u.RoomId == socket.roomId);
+            io.to(socket.roomId).emit('users', { users: roomUsers });            
         }
     });
 });

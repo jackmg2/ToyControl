@@ -172,7 +172,8 @@ io.on('connection', function (socket) {
         if (correspondingUser.length > 0) {
             var currentUser = correspondingUser[0];
             users.splice(users.indexOf(currentUser), 1);
-            io.to(socket.roomId).emit('users', { users: users });
+            var roomUsers = users.filter(function (u) { return u.RoomId == socket.roomId; });
+            io.to(socket.roomId).emit('users', { users: roomUsers });
         }
     });
     socket.on('devices', function (devices) {
@@ -192,7 +193,7 @@ io.on('connection', function (socket) {
     });
     socket.on('chat-message', function (message) {
         if (message != '' && socket.pseudo != '') {
-            message = ent.encode(message);
+            message = message;
             io.to(socket.roomId).emit('chat-message', { pseudo: socket.pseudo, message: message });
             console.log({ pseudo: socket.pseudo, message: message });
         }
@@ -213,7 +214,8 @@ io.on('connection', function (socket) {
             var targetedUser = users.filter(function (u) { return u.Devices.some(function (d) { return d.Id.toString() == device._id.value; }); })[0];
             var targetedToy = targetedUser.Devices.filter(function (d) { return d.Id.toString() == device._id.value; })[0];
             targetedToy.CurrentState = device._currentState;
-            io.to(socket.roomId).emit('users', { users: users });
+            var roomUsers = users.filter(function (u) { return u.RoomId == socket.roomId; });
+            io.to(socket.roomId).emit('users', { users: roomUsers });
         }
     });
 });

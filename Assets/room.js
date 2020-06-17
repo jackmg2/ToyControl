@@ -22,29 +22,6 @@ socket.on('users', function (data) {
       createUserMenu(user);
     }
   });
-  // }
-  // //New user
-  // else if (users.length < data.users.length) {
-  //   var diff = data.users.filter(du => !users.some(u => u._id.value == du._id.value));
-  //   diff.forEach(function (user) {
-  //     if (user._id.value != currentUser._id.value) {
-  //       createUserMenu(user);
-  //     }
-  //   });
-  // }
-  // //Device update
-  // else {
-  //   $('#toys-list').empty();
-  //   $("#users-list li").each(function () {
-  //     var id = $("#users-list li").attr('id');
-  //     if (id !== undefined) {
-  //       var user = data.users.filter(u => u._id.value == id)[0];
-  //       user._devices.forEach(function (device) {
-  //         update_device_list(device);
-  //       });
-  //     }
-  //   });
-  // }
 
   users = data.users;
 });
